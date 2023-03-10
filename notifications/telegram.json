@@ -1,0 +1,23 @@
+{
+  "base": {
+    "runName": "Regress",
+    "environment_1": "Google Chrome 110.0",
+    "environment_2": "Firefox 109.0",
+    "reportLink_env_1": "",
+    "reportLink_env_2": "",
+    "count_env": 2,
+    "allureFolder_env_1": "chrome/allure-report/widgets",
+    "allureFolder_env_2": "firefox/allure-report/widgets"
+  },
+  "telegram": {
+    "token": "",
+    "chat": ""
+  },
+  "minio": {
+    "minio": false,
+    "url": "",
+    "access_key": "",
+    "secret_key": "",
+    "bucket_path": "allure"
+  }
+}
