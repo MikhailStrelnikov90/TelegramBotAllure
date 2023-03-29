@@ -1,96 +1,148 @@
-import requests
 import json
 import os
+import asyncio
+from aiogram import Bot
 from minio import Minio
-from aiogram import Bot, Dispatcher
 
 
 with open(os.getcwd() + '/telegram.json') as tg:
     telegram_json = json.loads(tg.read())
 
-count_env = telegram_json['base']['count_env']
-env1 = telegram_json['base']['environment_1']
-env2 = telegram_json['base']['environment_2']
-api_token = telegram_json['telegram']['token']
-chat_id = telegram_json['telegram']['chat']
-run_name = telegram_json['base']['runName']
-minio_bucket = telegram_json['minio']['minio']
-url = telegram_json['minio']['url']
-access_key = telegram_json['minio']['access_key']
-secret_key = telegram_json['minio']['secret_key']
-bucket_path = telegram_json['minio']['bucket_path']
+count_env: int = telegram_json['base']['count_env']
+env1: str = telegram_json['base']['environment_1']
+env2: str = telegram_json['base']['environment_2']
+api_token: str = telegram_json['telegram']['token']
+chat_id: str = telegram_json['telegram']['chat']
+run_name: str = telegram_json['base']['runName']
+minio_bucket: bool = telegram_json['minio']['minio']
+url: str = telegram_json['minio']['url']
+access_key: str = telegram_json['minio']['access_key']
+secret_key: str = telegram_json['minio']['secret_key']
+bucket_name: str = telegram_json['minio']['bucket_name']
 
-PATH_ALLURE_REPORT_from_env_1 = telegram_json['base']['allureFolder_env_1']
-PATH_ALLURE_REPORT_from_env_2 = telegram_json['base']['allureFolder_env_2']
+PATH_ALLURE_REPORT_from_env_1: str = telegram_json['base']['allureFolder_env_1']
+PATH_ALLURE_REPORT_from_env_2: str = telegram_json['base']['allureFolder_env_2']
 bot = Bot(api_token)
-dp = Dispatcher(bot)
 
 
-def send_notification_to_telegram():
+def notification_text_with_one_env(launch_name: str, first_env: str, total_tests_env_1: int, passed_tests_env_1: int, failed_tests_env_1: int, skipped_tests_env_1: int, report_link_env_1: str) -> str:
+    notification: str = f"Название прогона: {launch_name}\n" \
+                   f"Окружение: {first_env}\n" \
+                   f"Общее количество тестов: {total_tests_env_1}\n" \
+                   f"Пройдено: {passed_tests_env_1}\n" \
+                   f"Упало: {str(failed_tests_env_1)}\n" \
+                   f"Отложено: {skipped_tests_env_1}\n" \
+                   f"Ссылка на отчет: {report_link_env_1}"
 
-    if minio_bucket:
-        client = Minio(endpoint=url, access_key=access_key, secret_key=secret_key)
-        object_from_1st_bucket = client.get_object(bucket_path, f'{PATH_ALLURE_REPORT_from_env_1}/summary.json')
-        summary_env_1 = object_from_1st_bucket.data.decode()
-        summary_json_env_1 = json.loads(summary_env_1)
-    else:
-        with open(os.path.split(os.getcwd())[0] + f'/{PATH_ALLURE_REPORT_from_env_1}/summary.json') as sm:
+    return notification
+
+
+def notification_text_with_two_env(launch_name: str, second_env: str, total_tests_env_2: int, passed_tests_env_2: int, failed_tests_env_2: int, skipped_tests_env_2: int, report_link_env_2: str) -> str:
+    notification: str = f"Название прогона: {launch_name}\n" \
+                        f"Окружение: {second_env}\n" \
+                        f"Общее количество тестов: {total_tests_env_2}\n" \
+                        f"Пройдено: {passed_tests_env_2}\n" \
+                        f"Упало: {str(failed_tests_env_2)}\n" \
+                        f"Отложено: {skipped_tests_env_2}\n" \
+                        f"Ссылка на отчет: {report_link_env_2}\n"
+
+    return notification
+
+
+def notification_error():
+    text_error: str = "Неверная конфигурация файла telegram.json, настройте конфигурацию согласно инструкции https://github.com/MikhailStrelnikov90/TelegramBotAllure/blob/main/README.md"
+
+    return text_error
+
+
+async def send_notification_to_telegram_without_minio():
+    path_env_1: str = os.path.split(os.getcwd())[0] + PATH_ALLURE_REPORT_from_env_1
+    path_env_2: str = os.path.split(os.getcwd())[0] + PATH_ALLURE_REPORT_from_env_2
+
+    try:
+        with open(path_env_1) as sm:
             summary_json_env_1 = json.loads(sm.read())
 
-    total_tests_from_env_1 = summary_json_env_1['statistic']['total']
-    passed_tests_from_env_1 = summary_json_env_1['statistic']['passed']
-    failed_tests_from_env_1 = int(summary_json_env_1['statistic']['failed']) + int(summary_json_env_1['statistic']['broken'])
-    skipped_tests_from_env_1 = summary_json_env_1['statistic']['skipped']
-    report_link_from_env_1 = telegram_json['base']['reportLink_env_1']
+        total_tests_from_env_1: int = int(summary_json_env_1['statistic']['total'])
+        passed_tests_from_env_1: int = int(summary_json_env_1['statistic']['passed'])
+        failed_tests_from_env_1: int = int(summary_json_env_1['statistic']['failed']) + int(summary_json_env_1['statistic']['broken'])
+        skipped_tests_from_env_1: int = int(summary_json_env_1['statistic']['skipped'])
+        report_link_from_env_1: str = telegram_json['base']['reportLink_env_1']
 
-    notification_text_with_one_env = f"Название прогона: {run_name}\n" \
-                                        f"Окружение: {env1}\n" \
-                                        f"Общее количество тестов: {total_tests_from_env_1}\n" \
-                                        f"Пройдено: {passed_tests_from_env_1}\n" \
-                                        f"Упало: {str(failed_tests_from_env_1)}\n" \
-                                        f"Отложено: {skipped_tests_from_env_1}\n" \
-                                        f"Ссылка на отчет: {report_link_from_env_1}"
+        with open(path_env_2) as smr:
+            summary_json_env_2 = json.loads(smr.read())
+
+        total_tests_from_env_2: int = int(summary_json_env_2['statistic']['total'])
+        passed_tests_from_env_2: int = int(summary_json_env_2['statistic']['passed'])
+        failed_tests_from_env_2: int = int(summary_json_env_2['statistic']['failed']) + int(summary_json_env_2['statistic']['broken'])
+        skipped_tests_from_env_2: int = int(summary_json_env_2['statistic']['skipped'])
+        report_link_from_env_2: str = telegram_json['base']['reportLink_env_2']
+
+        if count_env == 1:
+            notification: str = notification_text_with_one_env(run_name, env1, total_tests_from_env_1, passed_tests_from_env_1, failed_tests_from_env_1, skipped_tests_from_env_1, report_link_from_env_1)
+            await bot.send_message(chat_id, notification)
+        elif count_env == 2:
+            notification: str = f"{notification_text_with_one_env(run_name, env1, total_tests_from_env_1, passed_tests_from_env_1, failed_tests_from_env_1, skipped_tests_from_env_1, report_link_from_env_1)}" \
+            f"\n" \
+            f"\n" \
+            f"{notification_text_with_two_env(run_name, env2, total_tests_from_env_2, passed_tests_from_env_2, failed_tests_from_env_2, skipped_tests_from_env_2, report_link_from_env_2)}"
+            await bot.send_message(chat_id, notification)
+        else:
+            await bot.send_message(chat_id, notification_error())
+
+    except FileNotFoundError:
+        if count_env == 1:
+            text_error: str = f"Файл summary.json не найден по указанному пути: {path_env_1}, генерация отчета завершилась с ошибкой или путь указан неверно"
+        else:
+            text_error: str = f"Файл summary.json не найден по указанному пути: {path_env_1} или {path_env_2}, генерация отчета завершилась с ошибкой или путь указан неверно"
+        await bot.send_message(chat_id, text_error)
+
+
+async def send_notification_to_telegram_with_minio():
+
+    client = Minio(endpoint=url, access_key=access_key, secret_key=secret_key)
+    object_from_1st_bucket = client.get_object(bucket_name, PATH_ALLURE_REPORT_from_env_1)
+    summary_env_1 = object_from_1st_bucket.data.decode()
+    summary_json_env_1 = json.loads(summary_env_1)
+
+    total_tests_from_env_1: int = int(summary_json_env_1['statistic']['total'])
+    passed_tests_from_env_1: int = int(summary_json_env_1['statistic']['passed'])
+    failed_tests_from_env_1: int = int(summary_json_env_1['statistic']['failed']) + int(summary_json_env_1['statistic']['broken'])
+    skipped_tests_from_env_1: int = int(summary_json_env_1['statistic']['skipped'])
+    report_link_from_env_1: str = telegram_json['base']['reportLink_env_1']
+
+    object_from_2nd_bucket = client.get_object(bucket_name, PATH_ALLURE_REPORT_from_env_2)
+    summary_env_2 = object_from_2nd_bucket.data.decode()
+    summary_json_env_2 = json.loads(summary_env_2)
+
+    total_tests_from_env_2: int = int(summary_json_env_2['statistic']['total'])
+    passed_tests_from_env_2: int = int(summary_json_env_2['statistic']['passed'])
+    failed_tests_from_env_2: int = int(summary_json_env_2['statistic']['failed']) + int(summary_json_env_2['statistic']['broken'])
+    skipped_tests_from_env_2: int = int(summary_json_env_2['statistic']['skipped'])
+    report_link_from_env_2: str = telegram_json['base']['reportLink_env_2']
 
     if count_env == 1:
-        requests.post(url=f"https://api.telegram.org/bot{api_token}/sendMessage", data=json.dumps({"chat_id": chat_id, "text": notification_text_with_one_env, "disable_notification": True}),
-                      headers={'Content-Type': 'application/json'})
-
-    if count_env == 2:
-        if minio_bucket:
-            client = Minio(endpoint=url, access_key=access_key, secret_key=secret_key)
-            object_from_2nd_bucket = client.get_object(bucket_path, f'{PATH_ALLURE_REPORT_from_env_2}/summary.json')
-            summary_env_2 = object_from_2nd_bucket.data.decode()
-            summary_json_env_2 = json.loads(summary_env_2)
-        else:
-            with open(os.path.split(os.getcwd())[0] + f'/{PATH_ALLURE_REPORT_from_env_2}/widgets/summary.json') as sm:
-                summary_json_env_2 = json.loads(sm.read())
-
-        total_tests_from_env_2 = summary_json_env_2['statistic']['total']
-        passed_tests_from_env_2 = summary_json_env_2['statistic']['passed']
-        failed_tests_from_env_2 = int(summary_json_env_2['statistic']['failed']) + int(summary_json_env_2['statistic']['broken'])
-        skipped_tests_from_env_2 = summary_json_env_2['statistic']['skipped']
-        report_link_from_env_2 = telegram_json['base']['reportLink_env_2']
-
-        notification_text_with_two_env = f"Название прогона: {run_name}\n" \
-                                    f"Окружение: {env1}\n" \
-                                    f"Общее количество тестов: {total_tests_from_env_1}\n" \
-                                    f"Пройдено: {passed_tests_from_env_1}\n" \
-                                    f"Упало: {str(failed_tests_from_env_1)}\n" \
-                                    f"Отложено: {skipped_tests_from_env_1}\n" \
-                                    f"Ссылка на отчет: {report_link_from_env_1}\n" \
-                                    f"\n" \
-                                    f"\n" \
-                                    f"Название прогона: {run_name}\n" \
-                                    f"Окружение: {env2}\n" \
-                                    f"Общее количество тестов: {total_tests_from_env_2}\n" \
-                                    f"Пройдено: {passed_tests_from_env_2}\n" \
-                                    f"Упало: {str(failed_tests_from_env_2)}\n" \
-                                    f"Отложено: {skipped_tests_from_env_2}\n" \
-                                    f"Ссылка на отчет: {report_link_from_env_2}\n" \
+        notification: str = notification_text_with_one_env(run_name, env1, total_tests_from_env_1, passed_tests_from_env_1, failed_tests_from_env_1, skipped_tests_from_env_1, report_link_from_env_1)
+        await bot.send_message(chat_id, notification)
+    elif count_env == 2:
+        notification: str = f"{notification_text_with_one_env(run_name, env1, total_tests_from_env_1, passed_tests_from_env_1, failed_tests_from_env_1, skipped_tests_from_env_1, report_link_from_env_1)}" \
+                            f"\n" \
+                            f"\n" \
+                            f"{notification_text_with_two_env(run_name, env2, total_tests_from_env_2, passed_tests_from_env_2, failed_tests_from_env_2, skipped_tests_from_env_2, report_link_from_env_2)}"
+        await bot.send_message(chat_id, notification)
+    else:
+        await bot.send_message(chat_id, notification_error())
 
 
-        requests.post(url=f"https://api.telegram.org/bot{api_token}/sendMessage", data=json.dumps({"chat_id": chat_id, "text": notification_text_with_two_env, "disable_notification": True}), headers={'Content-Type': 'application/json'})
+async def send_notification_to_telegram():
+    match minio_bucket:
+        case True:
+            await send_notification_to_telegram_with_minio()
+        case False:
+            await send_notification_to_telegram_without_minio()
+        case _:
+            await bot.send_message(chat_id, notification_error(), disable_notification=True)
 
 
 if __name__ == '__main__':
-    send_notification_to_telegram()
+    asyncio.run(send_notification_to_telegram())
