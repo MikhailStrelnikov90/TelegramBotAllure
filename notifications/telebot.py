@@ -25,26 +25,14 @@ PATH_ALLURE_REPORT_from_env_2: str = telegram_json['base']['allureFolder_env_2']
 bot = Bot(api_token)
 
 
-def notification_text_with_one_env(launch_name: str, first_env: str, total_tests_env_1: int, passed_tests_env_1: int, failed_tests_env_1: int, skipped_tests_env_1: int, report_link_env_1: str) -> str:
+def notification_text(launch_name: str, env: str, total_tests: int, passed_tests: int, failed_tests: int, skipped_tests: int, report_link: str) -> str:
     notification: str = f"Название прогона: {launch_name}\n" \
-                   f"Окружение: {first_env}\n" \
-                   f"Общее количество тестов: {total_tests_env_1}\n" \
-                   f"Пройдено: {passed_tests_env_1}\n" \
-                   f"Упало: {str(failed_tests_env_1)}\n" \
-                   f"Отложено: {skipped_tests_env_1}\n" \
-                   f"Ссылка на отчет: {report_link_env_1}"
-
-    return notification
-
-
-def notification_text_with_two_env(launch_name: str, second_env: str, total_tests_env_2: int, passed_tests_env_2: int, failed_tests_env_2: int, skipped_tests_env_2: int, report_link_env_2: str) -> str:
-    notification: str = f"Название прогона: {launch_name}\n" \
-                        f"Окружение: {second_env}\n" \
-                        f"Общее количество тестов: {total_tests_env_2}\n" \
-                        f"Пройдено: {passed_tests_env_2}\n" \
-                        f"Упало: {str(failed_tests_env_2)}\n" \
-                        f"Отложено: {skipped_tests_env_2}\n" \
-                        f"Ссылка на отчет: {report_link_env_2}\n"
+                   f"Окружение: {env}\n" \
+                   f"Общее количество тестов: {total_tests}\n" \
+                   f"Пройдено: {passed_tests}\n" \
+                   f"Упало: {str(failed_tests)}\n" \
+                   f"Отложено: {skipped_tests}\n" \
+                   f"Ссылка на отчет: {report_link}"
 
     return notification
 
@@ -79,13 +67,13 @@ async def send_notification_to_telegram_without_minio():
         report_link_from_env_2: str = telegram_json['base']['reportLink_env_2']
 
         if count_env == 1:
-            notification: str = notification_text_with_one_env(run_name, env1, total_tests_from_env_1, passed_tests_from_env_1, failed_tests_from_env_1, skipped_tests_from_env_1, report_link_from_env_1)
+            notification: str = notification_text(run_name, env1, total_tests_from_env_1, passed_tests_from_env_1, failed_tests_from_env_1, skipped_tests_from_env_1, report_link_from_env_1)
             await bot.send_message(chat_id, notification)
         elif count_env == 2:
-            notification: str = f"{notification_text_with_one_env(run_name, env1, total_tests_from_env_1, passed_tests_from_env_1, failed_tests_from_env_1, skipped_tests_from_env_1, report_link_from_env_1)}" \
+            notification: str = f"{notification_text(run_name, env1, total_tests_from_env_1, passed_tests_from_env_1, failed_tests_from_env_1, skipped_tests_from_env_1, report_link_from_env_1)}" \
             f"\n" \
             f"\n" \
-            f"{notification_text_with_two_env(run_name, env2, total_tests_from_env_2, passed_tests_from_env_2, failed_tests_from_env_2, skipped_tests_from_env_2, report_link_from_env_2)}"
+            f"{notification_text(run_name, env2, total_tests_from_env_2, passed_tests_from_env_2, failed_tests_from_env_2, skipped_tests_from_env_2, report_link_from_env_2)}"
             await bot.send_message(chat_id, notification)
         else:
             await bot.send_message(chat_id, notification_error())
@@ -122,13 +110,13 @@ async def send_notification_to_telegram_with_minio():
     report_link_from_env_2: str = telegram_json['base']['reportLink_env_2']
 
     if count_env == 1:
-        notification: str = notification_text_with_one_env(run_name, env1, total_tests_from_env_1, passed_tests_from_env_1, failed_tests_from_env_1, skipped_tests_from_env_1, report_link_from_env_1)
+        notification: str = notification_text(run_name, env1, total_tests_from_env_1, passed_tests_from_env_1, failed_tests_from_env_1, skipped_tests_from_env_1, report_link_from_env_1)
         await bot.send_message(chat_id, notification)
     elif count_env == 2:
-        notification: str = f"{notification_text_with_one_env(run_name, env1, total_tests_from_env_1, passed_tests_from_env_1, failed_tests_from_env_1, skipped_tests_from_env_1, report_link_from_env_1)}" \
+        notification: str = f"{notification_text(run_name, env1, total_tests_from_env_1, passed_tests_from_env_1, failed_tests_from_env_1, skipped_tests_from_env_1, report_link_from_env_1)}" \
                             f"\n" \
                             f"\n" \
-                            f"{notification_text_with_two_env(run_name, env2, total_tests_from_env_2, passed_tests_from_env_2, failed_tests_from_env_2, skipped_tests_from_env_2, report_link_from_env_2)}"
+                            f"{notification_text(run_name, env2, total_tests_from_env_2, passed_tests_from_env_2, failed_tests_from_env_2, skipped_tests_from_env_2, report_link_from_env_2)}"
         await bot.send_message(chat_id, notification)
     else:
         await bot.send_message(chat_id, notification_error())
