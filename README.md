@@ -28,7 +28,7 @@ allureFolder_env_2 - путь к файлу summary.json в папке с allure
   url - эндпоинт бакета в MinIO (заполнение обязательно при установлении значения true в параметре minio)  
   access_key - access key сервисного аккаунта в MinIO (заполнение обязательно при установлении значения true в параметре minio)  
   secret_key - secret key сервисного аккаунта в MinIO (заполнение обязательно при установлении значения true в параметре minio)  
-  bucket_path - название bucket'а в MinIO (заполнение обязательно при установлении значения true в параметре minio)
+  bucket_name - название bucket'а в MinIO (заполнение обязательно при установлении значения true в параметре minio)
 
 6. В папке notifications выполнить команду python telebot.py
 

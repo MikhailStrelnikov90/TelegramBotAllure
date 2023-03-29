@@ -70,7 +70,7 @@ async def send_notification_to_telegram_without_minio():
             notification: str = notification_text(run_name, env1, total_tests_from_env_1, passed_tests_from_env_1, failed_tests_from_env_1, skipped_tests_from_env_1, report_link_from_env_1)
             await bot.send_message(chat_id, notification)
         elif count_env == 2:
-            notification: str = f"{notification_text(run_name, env1, total_tests_from_env_1, passed_tests_from_env_1, failed_tests_from_env_1, skipped_tests_from_env_1, report_link_from_env_1)}" \
+            notification: str = f"{notification_text(run_name, env1, total_tests_from_env_1, passed_tests_from_env_1, failed_tests_from_env_1, skipped_tests_from_env_1, report_link_from_env_1)}\n" \
             f"\n" \
             f"\n" \
             f"{notification_text(run_name, env2, total_tests_from_env_2, passed_tests_from_env_2, failed_tests_from_env_2, skipped_tests_from_env_2, report_link_from_env_2)}"
@@ -113,7 +113,7 @@ async def send_notification_to_telegram_with_minio():
         notification: str = notification_text(run_name, env1, total_tests_from_env_1, passed_tests_from_env_1, failed_tests_from_env_1, skipped_tests_from_env_1, report_link_from_env_1)
         await bot.send_message(chat_id, notification)
     elif count_env == 2:
-        notification: str = f"{notification_text(run_name, env1, total_tests_from_env_1, passed_tests_from_env_1, failed_tests_from_env_1, skipped_tests_from_env_1, report_link_from_env_1)}" \
+        notification: str = f"{notification_text(run_name, env1, total_tests_from_env_1, passed_tests_from_env_1, failed_tests_from_env_1, skipped_tests_from_env_1, report_link_from_env_1)}\n" \
                             f"\n" \
                             f"\n" \
                             f"{notification_text(run_name, env2, total_tests_from_env_2, passed_tests_from_env_2, failed_tests_from_env_2, skipped_tests_from_env_2, report_link_from_env_2)}"
