@@ -18,8 +18,8 @@ environment_2 - название второго окружения, если з�
 reportLink_env_1 - URL allure-отчета для первого окружения (заполнение обязательно)  
 reportLink_env_2 - URL allure-отчета для второго окружения  
 count_env - количество окружений (если окружение одно, то установить значение 1, если два, то 2 (значение типа int и обязательно к заполнению)  
-allureFolder_env_1 - путь к файлу summary.json в папке с allure-отчетом (при запуске команды allure generate -c ./allure-results -o ./allure-report путь будет таким: "allure-report/widgets") (заполнение обязательно)  
-allureFolder_env_2 - путь к файлу summary.json в папке с allure-отчетом при запуске с несколькими окружениями (при запуске команды allure generate -c ./allure-results -o ./chrome/allure-report путь будет таким: "chrome/allure-report/widgets")
+allureFolder_env_1 - путь к файлу summary.json в папке с allure-отчетом (при запуске команды allure generate -c ./allure-results -o ./allure-report путь будет таким: "allure-report/widgets/summary.json") (заполнение обязательно)  
+allureFolder_env_2 - путь к файлу summary.json в папке с allure-отчетом при запуске с несколькими окружениями (при запуске команды allure generate -c ./allure-results -o ./chrome/allure-report путь будет таким: "chrome/allure-report/widgets/summary.json")
   
   token - токен telegram-бота (присылает бот @BotFather при создании нового бота) (заполнение обязательно)  
   chat - id чата (Для того, чтобы узнать Chat ID, надо добавить бота в целевой чат сделать его администратором, перейти по ссылке вида https://api.telegram.org/botIDвашегобота/getUpdates, написать в чат и обновить страницу)
@@ -40,17 +40,17 @@ allureFolder_env_2 - путь к файлу summary.json в папке с allure
 {
   "base": {
     "runName": "Regress",
-    "environment_1": "Google Chrome 110.0",
-    "environment_2": "Firefox 109.0",
+    "environment_1": "Google Chrome 105.0",
+    "environment_2": "Firefox 105.0",
     "reportLink_env_1": "https://chrome-allure.ru/allure-docker-service/projects/default/reports/latest/index.html#",
     "reportLink_env_2": "https://firefox-allure.ru/allure-docker-service/projects/default/reports/latest/index.html#",
     "count_env": 2,
-    "allureFolder_env_1": "chrome/allure-report/widgets",
-    "allureFolder_env_2": "firefox/allure-report/widgets"
+    "allureFolder_env_1": "chrome/allure-report/widgets/summary.json",
+    "allureFolder_env_2": "firefox/allure-report/widgets/summary.json"
   },
   "telegram": {
     "token": "6065034703:AAHU83GhJyPrMXKr_gI7irPDB3hXYrqxFWw",
-    "chat": "-965612307"
+    "chat": "-965687307"
   },
   "minio": {
     "minio": false,
@@ -61,4 +61,3 @@ allureFolder_env_2 - путь к файлу summary.json в папке с allure
   }
 }
 ```
-

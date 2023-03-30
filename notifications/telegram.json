@@ -6,8 +6,8 @@
     "reportLink_env_1": "",
     "reportLink_env_2": "",
     "count_env": 2,
-    "allureFolder_env_1": "chrome/allure-report/widgets",
-    "allureFolder_env_2": "firefox/allure-report/widgets"
+    "allureFolder_env_1": "chrome/allure-report/widgets/summary.json",
+    "allureFolder_env_2": "firefox/allure-report/widgets/summary.json"
   },
   "telegram": {
     "token": "",
