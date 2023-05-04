@@ -99,20 +99,21 @@ async def send_notification_to_telegram_with_minio():
     skipped_tests_from_env_1: int = int(summary_json_env_1['statistic']['skipped'])
     report_link_from_env_1: str = telegram_json['base']['reportLink_env_1']
 
-    object_from_2nd_bucket = client.get_object(bucket_name, PATH_ALLURE_REPORT_from_env_2)
-    summary_env_2 = object_from_2nd_bucket.data.decode()
-    summary_json_env_2 = json.loads(summary_env_2)
-
-    total_tests_from_env_2: int = int(summary_json_env_2['statistic']['total'])
-    passed_tests_from_env_2: int = int(summary_json_env_2['statistic']['passed'])
-    failed_tests_from_env_2: int = int(summary_json_env_2['statistic']['failed']) + int(summary_json_env_2['statistic']['broken'])
-    skipped_tests_from_env_2: int = int(summary_json_env_2['statistic']['skipped'])
-    report_link_from_env_2: str = telegram_json['base']['reportLink_env_2']
-
     if count_env == 1:
         notification: str = notification_text(run_name, env1, total_tests_from_env_1, passed_tests_from_env_1, failed_tests_from_env_1, skipped_tests_from_env_1, report_link_from_env_1)
         await bot.send_message(chat_id, notification)
+
     elif count_env == 2:
+        object_from_2nd_bucket = client.get_object(bucket_name, PATH_ALLURE_REPORT_from_env_2)
+        summary_env_2 = object_from_2nd_bucket.data.decode()
+        summary_json_env_2 = json.loads(summary_env_2)
+
+        total_tests_from_env_2: int = int(summary_json_env_2['statistic']['total'])
+        passed_tests_from_env_2: int = int(summary_json_env_2['statistic']['passed'])
+        failed_tests_from_env_2: int = int(summary_json_env_2['statistic']['failed']) + int(summary_json_env_2['statistic']['broken'])
+        skipped_tests_from_env_2: int = int(summary_json_env_2['statistic']['skipped'])
+        report_link_from_env_2: str = telegram_json['base']['reportLink_env_2']
+
         notification: str = f"{notification_text(run_name, env1, total_tests_from_env_1, passed_tests_from_env_1, failed_tests_from_env_1, skipped_tests_from_env_1, report_link_from_env_1)}\n" \
                             f"\n" \
                             f"\n" \
@@ -123,13 +124,12 @@ async def send_notification_to_telegram_with_minio():
 
 
 async def send_notification_to_telegram():
-    match minio_bucket:
-        case True:
-            await send_notification_to_telegram_with_minio()
-        case False:
-            await send_notification_to_telegram_without_minio()
-        case _:
-            await bot.send_message(chat_id, notification_error(), disable_notification=True)
+    if minio_bucket:
+        await send_notification_to_telegram_with_minio()
+    elif not minio_bucket:
+        await send_notification_to_telegram_without_minio()
+    else:
+        await bot.send_message(chat_id, notification_error(), disable_notification=True)
 
 
 if __name__ == '__main__':
